@@ -143,7 +143,7 @@
      </rect>
     </property>
     <property name="text">
-     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/icomain.png&quot;/&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;IHelper 1.5&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Меню помощи - F1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+     <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p align=&quot;center&quot;&gt;&lt;img src=&quot;:/icomain.png&quot;/&gt;&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;IHelper 1.6&lt;/p&gt;&lt;p align=&quot;center&quot;&gt;Меню помощи - F1&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
     </property>
    </widget>
   </widget>

@@ -43,8 +43,6 @@ private slots:
     void OkPressed();
     void CancelPressed();
     void AutorunChecked();
-    void showMesDisconnected();
-    void showMesConnected();
 protected:
     virtual void keyPressEvent(QKeyEvent *event);
 
