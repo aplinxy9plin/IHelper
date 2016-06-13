@@ -1,12 +1,17 @@
 #ifndef IHELPER_H
 #define IHELPER_H
 
+#include <QTcpSocket>
 #include <QMainWindow>
 #include <QKeyEvent>
 #include <QSettings>
 #include <Crypter.h>
 #include <QSystemTrayIcon>
 #include <QMenu>
+#include <QTimer>
+#include <QMessageBox>
+#include <QDebug>
+#include <QTime>
 
 namespace Ui {
 class IHelper;
@@ -26,6 +31,7 @@ private:
     QString login;
     QString pwd;
     bool developer = false;
+    QTimer *timer = new QTimer();
     QSettings *settings = new QSettings("HKEY_CURRENT_USER\\Software\\IHelper",QSettings::NativeFormat);
     QSettings *regSettings = new QSettings("HKEY_LOCAL_MACHINE\\Software\\Microsoft\\Windows\\CurrentVersion\\Run",QSettings::NativeFormat);
     QString savedValue;
@@ -34,6 +40,7 @@ private:
     QAction *quitAction;
     QSystemTrayIcon *trayIcon;
     QMenu *trayIconMenu;
+    QThread *thread;
 private slots:
     void changeEvent(QEvent*);
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
@@ -43,6 +50,8 @@ private slots:
     void OkPressed();
     void CancelPressed();
     void AutorunChecked();
+    void ConnectChecked();
+    void Checking();
 protected:
     virtual void keyPressEvent(QKeyEvent *event);
 

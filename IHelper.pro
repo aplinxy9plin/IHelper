@@ -5,7 +5,7 @@
 #-------------------------------------------------
 
 QT       += core gui
-
+QT       += network
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = IHelper
@@ -21,3 +21,5 @@ HEADERS  += ihelper.h \
 FORMS    += ihelper.ui
 
 RESOURCES += res.qrc
+
+CONFIG +=console

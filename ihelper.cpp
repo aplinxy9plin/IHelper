@@ -1,17 +1,27 @@
 #include "ihelper.h"
 #include "ui_ihelper.h"
 #include <QProcess>
-#include <QMessageBox>
+int k;
 QString rasdial;
 IHelper::IHelper(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::IHelper)
 {
     this->setTrayIconActions();
+    this->showTrayIcon();
     ui->setupUi(this);
+    if (settings->value("Settings/Autorun",0) == 1){
+            ui->boxAuto->setChecked(true);
+        }
+    if (settings->value("Settings/Checking") == 1){
+        ui->boxCheck->setChecked(true);
+        timer->start(300000);
+    }
     connect(ui->pbOk,SIGNAL(clicked(bool)),this,SLOT(OkPressed()));
     connect(ui->pbExit,SIGNAL(clicked(bool)),this,SLOT(CancelPressed()));
     connect(ui->boxAuto,SIGNAL(clicked(bool)),this,SLOT(AutorunChecked()));
+    connect(ui->boxCheck,SIGNAL(clicked(bool)),this,SLOT(ConnectChecked()));
+    connect(timer,SIGNAL(timeout()),this,SLOT(Checking()));
     QRegExp rx("[a-zA-Z0-9]+");
     QValidator *valid = new QRegExpValidator(rx,this);
     ui->leLogin->setValidator(valid);
@@ -20,10 +30,59 @@ IHelper::IHelper(QWidget *parent) :
     ui->leName->setText(settings->value("Rasdial/Name").toString());
     ui->leLogin->setText(settings->value("Rasdial/Login").toString());
     ui->lePwd->setText(Crypter::decryptString(settings->value("Rasdial/Pwd").toString()));
-    if (settings->value("Settings/Autorun",0) == 1){
-            ui->boxAuto->setChecked(true);
-        }
     //если конфиг существует, загружаем данные
+    settings->sync();
+}
+
+void IHelper::ConnectChecked(){
+    if (ui->boxCheck->isChecked() == true){
+        if ((ui->leLogin->text().isEmpty() == false) && (ui->leName->text().isEmpty() == false)
+                && (ui->lePwd->text().isEmpty() == false)) {
+            trayIcon->showMessage("IHelper","Функция проверки соединения активирована.");
+            settings->setValue("Rasdial/Name",ui->leName->text());
+            settings->setValue("Rasdial/Login",ui->leLogin->text());
+            settings->setValue("Rasdial/Pwd",Crypter::cryptString(ui->lePwd->text()));
+            settings->setValue("Settings/Checking",1);
+            settings->sync();
+            timer->start(300000);
+            } else {
+                QMessageBox *box = new QMessageBox();
+                box->setText("Одно из полей не заполнено.");
+                box->setIcon(QMessageBox::Warning);
+                box->show();
+                ui->boxCheck->setChecked(false);
+                //MessageBox в случае срабатывания защиты
+            }
+    } else {
+        settings->setValue("Settings/Checking",0);
+        timer->stop();
+        settings->sync();
+    }
+}
+
+void IHelper::Checking(){
+    QTcpSocket *socket = new QTcpSocket();
+    socket->connectToHost("google.com",80);
+    if (socket->error() == QAbstractSocket::UnknownSocketError)
+    {
+        qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz") << " - connected";
+    } else {
+        trayIcon->showMessage("IHelper","Соединение было разорвано. Попытка подключения...");
+        qDebug() << QTime::currentTime().toString("hh:mm:ss.zzz") << " - disconnected";
+        name = "\""+ui->leName->text()+"\"";
+        login = " "+ui->leLogin->text();
+        pwd = " "+ui->lePwd->text();
+        rasdial = "rasdial.exe "+name+login+pwd;
+        if (developer == false){
+            system(qPrintable(rasdial));
+        ++k;
+        if (k == 5){
+            timer->stop();
+            ui->boxCheck->setDisabled(true);
+        }
+        }
+    }
+    socket->disconnectFromHost();
 }
 
 IHelper::~IHelper()
@@ -88,9 +147,9 @@ void IHelper::keyPressEvent(QKeyEvent *event){
                 QMessageBox *help = new QMessageBox();
                 help->setIconPixmap(QPixmap(":/Qt.png"));
                 help->setWindowTitle("IHelper");
-                help->setText("<p align='center'>IHelper v1.6</p>");
+                help->setText("<p align='center'>IHelper v2.0</p>");
                 help->setInformativeText("<p align='center'>Создано&nbsp;на&nbsp;"
-                                         "Qt&nbsp;5.6(MSVC 2015x32)<br><br>Горячие клавиши:<br>"
+                                         "Qt&nbsp;5.6(MSVC 2015x86)<br><br>Горячие клавиши:<br>"
                                          "<br>F5&nbsp;-&nbsp;включение&nbsp;режима&nbsp;разработчика<br>"
                                          "<br>F9&nbsp;-&nbsp;удаление&nbsp;настроек</p>");
                 help->setWindowIcon(QIcon(":/ico.ico"));
@@ -124,6 +183,7 @@ void IHelper::AutorunChecked(){
         //MessageBox в случае срабатывания защиты
     }
     //автозагрузка, в зависимости от конфига либо выключается либо включается
+    settings->sync();
 }
 void IHelper::showTrayIcon()
 {
@@ -176,7 +236,6 @@ void IHelper::changeEvent(QEvent *event)
     {
         if (isMinimized())
         {
-            this->showTrayIcon();
             this->hide();
         }
     }
